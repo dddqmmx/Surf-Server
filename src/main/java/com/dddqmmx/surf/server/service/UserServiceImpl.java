@@ -5,6 +5,8 @@ import com.dddqmmx.surf.server.pojo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service("userService")
 public class UserServiceImpl implements UserService{
     private final UserMapper userMapper;
@@ -16,5 +18,10 @@ public class UserServiceImpl implements UserService{
     @Override
     public User getUserById(String userName, String userPass) {
         return userMapper.getUserById(userName, userPass);
+    }
+
+    @Override
+    public List<User> getUserFriendList(int userId) {
+        return userMapper.getUserFriendList(userId);
     }
 }

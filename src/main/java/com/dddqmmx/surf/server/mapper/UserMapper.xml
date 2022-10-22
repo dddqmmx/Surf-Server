@@ -4,4 +4,7 @@
     <select id="getUserById" resultType="com.dddqmmx.surf.server.pojo.User">
         select * from user where userName = #{userName} and password = #{password};
     </select>
+    <select id="getUserFriendList" resultType="com.dddqmmx.surf.server.pojo.User">
+        select * from user where id in (select otherSideId from relation where userId = #{userId} and relationType = 1)
+    </select>
 </mapper>

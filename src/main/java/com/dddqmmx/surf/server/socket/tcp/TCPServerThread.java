@@ -102,7 +102,6 @@ public class TCPServerThread extends Thread{
                     JSONObject comeBackJson = new JSONObject();
                     SocketSession socketSession = ConnectList.getSocketSession(sessionId);
                     User user = (User) socketSession.get("user");
-
                     List<Group> groupList = groupService.geGroupListByUserId(user.getId());
                     JSONArray groupListArray = new JSONArray();
                     for(Group group : groupList){
@@ -113,6 +112,22 @@ public class TCPServerThread extends Thread{
                         groupListArray.put(json);
                     }
                     comeBackJson.put("groupList",groupListArray);
+                    comeBackJson.put("command",command);
+                    send(comeBackJson);
+                } else if ("getUserFriendList".equals(command)){
+                    JSONObject comeBackJson = new JSONObject();
+                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    User user = (User) socketSession.get("user");
+                    List<User> userFriendList = userService.getUserFriendList(user.getId());
+                    JSONArray groupListArray = new JSONArray();
+                    for(User userFriend : userFriendList){
+                        JSONObject json = new JSONObject();
+                        json.put("id",userFriend.getId());
+                        json.put("userName",userFriend.getUserName());
+                        json.put("name",userFriend.getName());
+                        groupListArray.put(json);
+                    }
+                    comeBackJson.put("userList",groupListArray);
                     comeBackJson.put("command",command);
                     send(comeBackJson);
                 }
