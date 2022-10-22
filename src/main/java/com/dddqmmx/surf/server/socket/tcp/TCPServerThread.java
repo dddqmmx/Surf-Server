@@ -1,21 +1,26 @@
 package com.dddqmmx.surf.server.socket.tcp;
 
+import com.dddqmmx.surf.server.pojo.Group;
 import com.dddqmmx.surf.server.pojo.User;
+import com.dddqmmx.surf.server.service.GroupService;
 import com.dddqmmx.surf.server.service.UserService;
 import com.dddqmmx.surf.server.socket.connect.ConnectList;
 import com.dddqmmx.surf.server.socket.connect.SocketSession;
 import com.dddqmmx.surf.server.util.BeanUtil;
 import com.dddqmmx.surf.server.util.RandomCharacters;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.Base64;
+import java.util.List;
 
 public class TCPServerThread extends Thread{
 
     private UserService userService;
+    private GroupService groupService;
 
     protected String sessionId;
     private final Socket socket;
@@ -23,6 +28,7 @@ public class TCPServerThread extends Thread{
     public TCPServerThread(Socket socket) {
         this.socket = socket;
         userService = BeanUtil.getBean(UserService.class);
+        groupService = BeanUtil.getBean(GroupService.class);
     }
 
     @Override
@@ -77,10 +83,42 @@ public class TCPServerThread extends Thread{
                     }
                     comeBackJson.put("command",command);
                     send(comeBackJson);
+                } else if ("getUserInfo".equals(command)){
+                    JSONObject comeBackJson = new JSONObject();
+                    User user = null;
+                    if (!jsonObject.has("userId")){
+                        SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                        user = (User) socketSession.get("user");
+                    } else {
+                        System.out.println("error");
+                    }
+                    comeBackJson.put("command",command);
+                    if (user != null) {
+                        comeBackJson.put("userName",user.getUserName());
+                        comeBackJson.put("name",user.getName());
+                    }
+                    send(comeBackJson);
+                } else if ("getGroupList".equals(command)) {
+                    JSONObject comeBackJson = new JSONObject();
+                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    User user = (User) socketSession.get("user");
+
+                    List<Group> groupList = groupService.geGroupListByUserId(user.getId());
+                    JSONArray groupListArray = new JSONArray();
+                    for(Group group : groupList){
+                        JSONObject json = new JSONObject();
+                        json.put("id",group.getId());
+                        json.put("groupName",group.getGroupName());
+                        json.put("groupHead",group.getGroupHead());
+                        groupListArray.put(json);
+                    }
+                    comeBackJson.put("groupList",groupListArray);
+                    comeBackJson.put("command",command);
+                    send(comeBackJson);
                 }
             }
-            /*socket.close();
-            System.out.println("over");*/
+            socket.close();
+            System.out.println("over");
         }catch (Exception e){
             e.printStackTrace();
             System.out.println("客户端"+socket.getRemoteSocketAddress()+"下线了。");

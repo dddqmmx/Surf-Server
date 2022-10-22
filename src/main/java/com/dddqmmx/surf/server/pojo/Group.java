@@ -33,7 +33,7 @@ public class Group implements Serializable {
 
     @Override
     public String toString() {
-        return "Group{" +
+        return "GroupMapper{" +
                 "id=" + id +
                 ", groupName='" + groupName + '\'' +
                 ", groupHead='" + groupHead + '\'' +
