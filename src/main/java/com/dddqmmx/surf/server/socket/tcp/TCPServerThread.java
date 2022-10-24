@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
@@ -143,10 +145,13 @@ public class TCPServerThread extends Thread{
     public void send(String json){
         System.out.println("TCPSend : " + json);
         try {
-            OutputStream os = socket.getOutputStream();
-            PrintStream ps = new PrintStream(os);
+            OutputStreamWriter outputStream = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
+            PrintWriter printWriter = new PrintWriter(outputStream,true);
+            printWriter.println(json);
+            /*printWriter.flush();*/
+            /*PrintStream ps = new PrintStream(outputStream,true);
             ps.println(json);
-            ps.flush();
+            ps.flush();*/
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
