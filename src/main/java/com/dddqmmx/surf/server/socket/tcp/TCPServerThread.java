@@ -132,6 +132,10 @@ public class TCPServerThread extends Thread{
                     comeBackJson.put("userList",groupListArray);
                     comeBackJson.put("command",command);
                     send(comeBackJson);
+                } else if ("getGroupInfo".equals(command)) {
+                    JSONObject comeBackJson = new JSONObject();
+                    comeBackJson.put("command",command);
+                    send(comeBackJson);
                 }
             }
             socket.close();
