@@ -1,8 +1,11 @@
 package com.dddqmmx.surf.server.socket.tcp;
 
 import com.dddqmmx.surf.server.pojo.Group;
+import com.dddqmmx.surf.server.pojo.Message;
 import com.dddqmmx.surf.server.pojo.User;
 import com.dddqmmx.surf.server.service.GroupService;
+import com.dddqmmx.surf.server.service.MessageService;
+import com.dddqmmx.surf.server.service.MessageServiceImpl;
 import com.dddqmmx.surf.server.service.UserService;
 import com.dddqmmx.surf.server.socket.connect.ConnectList;
 import com.dddqmmx.surf.server.socket.connect.SocketSession;
@@ -23,6 +26,7 @@ public class TCPServerThread extends Thread{
 
     private UserService userService;
     private GroupService groupService;
+    private MessageServiceImpl messageService;
 
     protected String sessionId;
     private final Socket socket;
@@ -31,6 +35,7 @@ public class TCPServerThread extends Thread{
         this.socket = socket;
         userService = BeanUtil.getBean(UserService.class);
         groupService = BeanUtil.getBean(GroupService.class);
+        messageService = BeanUtil.getBean(MessageServiceImpl.class);
     }
 
     @Override
@@ -136,9 +141,29 @@ public class TCPServerThread extends Thread{
                     int groupId = jsonObject.getInt("groupId");
                     Group groupInfo = groupService.getGroupInfo(groupId);
                     JSONObject comeBackJson = new JSONObject();
-                    comeBackJson.put("command",command);
                     comeBackJson.put("groupName",groupInfo.getGroupName());
+                    comeBackJson.put("command",command);
                     send(comeBackJson);
+                } else if ("getGroupMessage".equals(command)){
+                    int groupId = jsonObject.getInt("groupId");
+                    List<Message> groupMessage = messageService.getGroupMessage(groupId);
+                    if (groupMessage != null && groupMessage.size() != 0){
+                        JSONObject comeBackJson = new JSONObject();
+                        JSONArray messageArray = new JSONArray();
+                        for(Message message : groupMessage){
+                            JSONObject json = new JSONObject();
+                            json.put("id",message.getId());
+                            json.put("senderId",message.getSenderId());
+                            json.put("contactType",message.getContactType());
+                            json.put("contactId",message.getContactId());
+                            json.put("messageType",message.getMessageType());
+                            json.put("message",message.getMessage());
+                            messageArray.put(json);
+                        }
+                        comeBackJson.put("command",command);
+                        comeBackJson.put("messageList",messageArray);
+                        send(comeBackJson);
+                    }
                 }
             }
             socket.close();
