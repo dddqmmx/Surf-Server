@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface GroupService {
     List<Group> geGroupListByUserId(int userId);
+    Group getGroupInfo(int groupId);
 }

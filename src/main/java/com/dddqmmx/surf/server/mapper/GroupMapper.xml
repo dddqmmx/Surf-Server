@@ -4,4 +4,8 @@
     <select id="geGroupListByUserId" resultType="com.dddqmmx.surf.server.pojo.Group">
         select * from `group` where id in (select groupId from group_member where userId = #{userId});
     </select>
+
+    <select id="getGroupInfo" resultType="com.dddqmmx.surf.server.pojo.Group">
+        select * from `group` where id = #{groupId}
+    </select>
 </mapper>

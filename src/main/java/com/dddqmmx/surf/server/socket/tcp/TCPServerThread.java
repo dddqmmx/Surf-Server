@@ -133,8 +133,11 @@ public class TCPServerThread extends Thread{
                     comeBackJson.put("command",command);
                     send(comeBackJson);
                 } else if ("getGroupInfo".equals(command)) {
+                    int groupId = jsonObject.getInt("groupId");
+                    Group groupInfo = groupService.getGroupInfo(groupId);
                     JSONObject comeBackJson = new JSONObject();
                     comeBackJson.put("command",command);
+                    comeBackJson.put("groupName",groupInfo.getGroupName());
                     send(comeBackJson);
                 }
             }

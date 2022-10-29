@@ -10,4 +10,5 @@ import java.util.List;
 @Mapper
 public interface GroupMapper {
     List<Group> geGroupListByUserId(int userId);
+    Group getGroupInfo(int groupId);
 }

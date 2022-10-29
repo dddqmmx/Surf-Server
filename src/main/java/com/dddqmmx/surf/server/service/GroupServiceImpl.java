@@ -19,4 +19,9 @@ public class GroupServiceImpl implements GroupService{
     public List<Group> geGroupListByUserId(int userId) {
         return groupMapper.geGroupListByUserId(userId);
     }
+
+    @Override
+    public Group getGroupInfo(int groupId) {
+        return groupMapper.getGroupInfo(groupId);
+    }
 }
