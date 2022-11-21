@@ -6,9 +6,11 @@ public class Message implements Serializable {
     private Integer id;
     private Integer senderId;
     private Integer contactType;
-    private Integer contactId;
+    private Integer  contactId;
     private Integer messageType;
     private String message;
+
+    private User sender;
 
     public Integer getId() {
         return id;
@@ -68,5 +70,13 @@ public class Message implements Serializable {
                 ", messageType=" + messageType +
                 ", message='" + message + '\'' +
                 '}';
+    }
+
+    public User getSender() {
+        return sender;
+    }
+
+    public void setSender(User sender) {
+        this.sender = sender;
     }
 }

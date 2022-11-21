@@ -3,7 +3,7 @@
 <mapper namespace="com.dddqmmx.surf.server.mapper.MessageMapper">
 
     <select id="getGroupMessage" resultType="com.dddqmmx.surf.server.pojo.Message">
-        select * from message where contactType = 1 and contactId = #{groupId} order by id desc limit 20;
+        select * from (select * from message where contactType = 1 and contactId = #{groupId} order by id desc limit 20) as `m*` order by id
     </select>
 
 </mapper>

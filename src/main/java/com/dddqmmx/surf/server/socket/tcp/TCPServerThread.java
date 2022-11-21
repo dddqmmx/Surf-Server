@@ -80,11 +80,12 @@ public class TCPServerThread extends Thread{
                     String userName = jsonObject.getString("userName");
                     String password = jsonObject.getString("password");
                     SocketSession socketSession = ConnectList.getSocketSession(sessionId);
-                    User user = userService.getUserById(userName,password);
+                    User user = userService.login(userName,password);
                     JSONObject comeBackJson = new JSONObject();
                     if (user != null){
                         socketSession.set("user",user);
                         comeBackJson.put("login","true");
+                        comeBackJson.put("id",user.getId());
                     }else {
                         comeBackJson.put("login","false");
                     }
@@ -147,7 +148,7 @@ public class TCPServerThread extends Thread{
                 } else if ("getGroupMessage".equals(command)){
                     int groupId = jsonObject.getInt("groupId");
                     List<Message> groupMessage = messageService.getGroupMessage(groupId);
-                    if (groupMessage != null && groupMessage.size() != 0){
+                    if (groupMessage.size() != 0){
                         JSONObject comeBackJson = new JSONObject();
                         JSONArray messageArray = new JSONArray();
                         for(Message message : groupMessage){
@@ -164,6 +165,15 @@ public class TCPServerThread extends Thread{
                         comeBackJson.put("messageList",messageArray);
                         send(comeBackJson);
                     }
+                } else if ("getUserInfoById".equals(command)){
+                    int userId = jsonObject.getInt("userId");
+                    User userById = userService.getUserById(userId);
+                    JSONObject comeBackJson = new JSONObject();
+                    comeBackJson.put("command",command);
+                    comeBackJson.put("id",userById.getId());
+                    comeBackJson.put("userName",userById.getUserName());
+                    comeBackJson.put("name",userById.getName());
+                    send(comeBackJson);
                 }
             }
             socket.close();
