@@ -46,7 +46,7 @@ public class TCPServerThread extends Thread{
             //从socket通信管道中得到一个字节输入流
             InputStream is = socket.getInputStream();
             //把字节输入流转换成字符输入流
-            InputStreamReader isr = new InputStreamReader(is);
+            InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
             //把字符输入流包装为缓冲字符输入流
             BufferedReader br = new BufferedReader(isr);
             //按照行读取消息
@@ -192,10 +192,6 @@ public class TCPServerThread extends Thread{
                     if (contactType == 1) {
                         for (GroupMember groupMember : groupMemberService.getGroupMemberListByGroupId(contactId)) {
                             int userId = groupMember.getUserId();
-                            System.out.println(userId);
-                            System.out.println(user.getId());
-                            System.out.println("dsadads"+(userId != user.getId()));
-                            System.out.println("dsadads"+(ConnectList.userSessionMap.containsKey(userId)));
                             if (ConnectList.userSessionMap.containsKey(userId) && userId != user.getId()){
                                 String sessionId = ConnectList.userSessionMap.get(userId);
                                 TCPServerThread thread = ConnectList.getThread(sessionId);
@@ -214,7 +210,7 @@ public class TCPServerThread extends Thread{
     }
 
     public void send(String json){
-        System.out.println("TCPSend : "+ sessionId + json);
+        System.out.println("TCPSend : "+ json);
         try {
             OutputStreamWriter outputStream = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
             PrintWriter printWriter = new PrintWriter(outputStream,true);
