@@ -1,12 +1,11 @@
 package com.dddqmmx.surf.server.socket.tcp;
 
+import com.dddqmmx.surf.server.mapper.GroupMemberMapper;
 import com.dddqmmx.surf.server.pojo.Group;
+import com.dddqmmx.surf.server.pojo.GroupMember;
 import com.dddqmmx.surf.server.pojo.Message;
 import com.dddqmmx.surf.server.pojo.User;
-import com.dddqmmx.surf.server.service.GroupService;
-import com.dddqmmx.surf.server.service.MessageService;
-import com.dddqmmx.surf.server.service.MessageServiceImpl;
-import com.dddqmmx.surf.server.service.UserService;
+import com.dddqmmx.surf.server.service.*;
 import com.dddqmmx.surf.server.socket.connect.ConnectList;
 import com.dddqmmx.surf.server.socket.connect.SocketSession;
 import com.dddqmmx.surf.server.util.BeanUtil;
@@ -26,16 +25,19 @@ public class TCPServerThread extends Thread{
 
     private UserService userService;
     private GroupService groupService;
-    private MessageServiceImpl messageService;
+    private MessageService messageService;
+    private GroupMemberService groupMemberService;
 
     protected String sessionId;
     private final Socket socket;
 
     public TCPServerThread(Socket socket) {
         this.socket = socket;
-        userService = BeanUtil.getBean(UserService.class);
-        groupService = BeanUtil.getBean(GroupService.class);
+        userService = BeanUtil.getBean(UserServiceImpl.class);
+        groupService = BeanUtil.getBean(GroupServiceImpl.class);
         messageService = BeanUtil.getBean(MessageServiceImpl.class);
+        messageService = BeanUtil.getBean(MessageServiceImpl.class);
+        groupMemberService = BeanUtil.getBean(GroupMemberService.class);
     }
 
     @Override
@@ -83,6 +85,7 @@ public class TCPServerThread extends Thread{
                     User user = userService.login(userName,password);
                     JSONObject comeBackJson = new JSONObject();
                     if (user != null){
+                        ConnectList.userSessionMap.put(user.getId(),sessionId);
                         socketSession.set("user",user);
                         comeBackJson.put("login","true");
                         comeBackJson.put("id",user.getId());
@@ -174,6 +177,32 @@ public class TCPServerThread extends Thread{
                     comeBackJson.put("userName",userById.getUserName());
                     comeBackJson.put("name",userById.getName());
                     send(comeBackJson);
+                } else if ("sendTextMessage".equals(command)){
+                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    User user = (User) socketSession.get("user");
+                    int contactType = jsonObject.getInt("contactType");
+                    int contactId = jsonObject.getInt("contactId");
+                    String message = jsonObject.getString("message");
+                    JSONObject comeBackJson = new JSONObject();
+                    comeBackJson.put("command","processMessage");
+                    comeBackJson.put("sender",user.getId());
+                    comeBackJson.put("message",message);
+                    comeBackJson.put("contactType",contactType);
+                    comeBackJson.put("contactId",contactId);
+                    if (contactType == 1) {
+                        for (GroupMember groupMember : groupMemberService.getGroupMemberListByGroupId(contactId)) {
+                            int userId = groupMember.getUserId();
+                            System.out.println(userId);
+                            System.out.println(user.getId());
+                            System.out.println("dsadads"+(userId != user.getId()));
+                            System.out.println("dsadads"+(ConnectList.userSessionMap.containsKey(userId)));
+                            if (ConnectList.userSessionMap.containsKey(userId) && userId != user.getId()){
+                                String sessionId = ConnectList.userSessionMap.get(userId);
+                                TCPServerThread thread = ConnectList.getThread(sessionId);
+                                thread.send(comeBackJson);
+                            }
+                        }
+                    }
                 }
             }
             socket.close();
@@ -185,7 +214,7 @@ public class TCPServerThread extends Thread{
     }
 
     public void send(String json){
-        System.out.println("TCPSend : " + json);
+        System.out.println("TCPSend : "+ sessionId + json);
         try {
             OutputStreamWriter outputStream = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
             PrintWriter printWriter = new PrintWriter(outputStream,true);
