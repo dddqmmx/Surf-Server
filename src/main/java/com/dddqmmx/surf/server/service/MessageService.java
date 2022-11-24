@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface MessageService {
     List<Message> getGroupMessage(int groupId);
+    boolean insertMessage(Message message);
 }

@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+/**
+ * debug console
+ */
 public class Console extends Thread{
     @Override
     public void run() {

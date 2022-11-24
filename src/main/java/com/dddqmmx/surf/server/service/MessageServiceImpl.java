@@ -22,4 +22,9 @@ public class MessageServiceImpl implements MessageService{
     public List<Message> getGroupMessage(int groupId) {
         return messageMapper.getGroupMessage(groupId);
     }
+
+    @Override
+    public boolean insertMessage(Message message) {
+        return messageMapper.insertMessage(message)>0;
+    }
 }

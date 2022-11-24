@@ -10,4 +10,5 @@ import java.util.List;
 @Mapper
 public interface MessageMapper {
     List<Message> getGroupMessage(int groupId);
+    int insertMessage(Message message);
 }

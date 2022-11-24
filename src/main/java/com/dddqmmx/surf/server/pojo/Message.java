@@ -3,6 +3,7 @@ package com.dddqmmx.surf.server.pojo;
 import java.io.Serializable;
 
 public class Message implements Serializable {
+
     private Integer id;
     private Integer senderId;
     private Integer contactType;

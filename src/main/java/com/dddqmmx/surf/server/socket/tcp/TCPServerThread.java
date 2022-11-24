@@ -190,12 +190,17 @@ public class TCPServerThread extends Thread{
                     comeBackJson.put("contactType",contactType);
                     comeBackJson.put("contactId",contactId);
                     if (contactType == 1) {
+                        Message saveMessage = new Message();
+                        saveMessage.setSenderId(user.getId());
+                        saveMessage.setContactType(contactType);
+                        saveMessage.setContactId(contactId);
+                        saveMessage.setMessageType(1);
+                        saveMessage.setMessage(message);
+                        messageService.insertMessage(saveMessage);
                         for (GroupMember groupMember : groupMemberService.getGroupMemberListByGroupId(contactId)) {
                             int userId = groupMember.getUserId();
                             if (ConnectList.userSessionMap.containsKey(userId) && userId != user.getId()){
-                                System.out.println(userId);
                                 String sessionId = ConnectList.userSessionMap.get(userId);
-                                System.out.println(sessionId);
                                 TCPServerThread thread = ConnectList.getThread(sessionId);
                                 thread.send(comeBackJson);
                             }

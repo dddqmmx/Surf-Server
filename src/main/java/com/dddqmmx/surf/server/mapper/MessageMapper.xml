@@ -6,4 +6,7 @@
         select * from (select * from message where contactType = 1 and contactId = #{groupId} order by id desc limit 20) as `m*` order by id
     </select>
 
+    <insert id="insertMessage">
+        insert into message(senderId, contactType, contactId, messageType, message) VALUES (#{senderId},#{contactType},#{contactId},#{messageType},#{message})
+    </insert>
 </mapper>
