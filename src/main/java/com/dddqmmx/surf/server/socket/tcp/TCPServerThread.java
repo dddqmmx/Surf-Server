@@ -193,7 +193,9 @@ public class TCPServerThread extends Thread{
                         for (GroupMember groupMember : groupMemberService.getGroupMemberListByGroupId(contactId)) {
                             int userId = groupMember.getUserId();
                             if (ConnectList.userSessionMap.containsKey(userId) && userId != user.getId()){
+                                System.out.println(userId);
                                 String sessionId = ConnectList.userSessionMap.get(userId);
+                                System.out.println(sessionId);
                                 TCPServerThread thread = ConnectList.getThread(sessionId);
                                 thread.send(comeBackJson);
                             }
@@ -207,6 +209,9 @@ public class TCPServerThread extends Thread{
             e.printStackTrace();
             System.out.println("客户端"+socket.getRemoteSocketAddress()+"下线了。");
         }
+        SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+        User user = (User) socketSession.get("user");
+        ConnectList.userSessionMap.remove(user.getId());
     }
 
     public void send(String json){

@@ -1,5 +1,6 @@
 package com.dddqmmx.surf.server;
 
+import com.dddqmmx.surf.server.console.Console;
 import com.dddqmmx.surf.server.socket.tcp.TCPServer;
 import com.dddqmmx.surf.server.socket.udp.UDPServer;
 import org.springframework.boot.SpringApplication;
@@ -10,6 +11,8 @@ public class SurfServerApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(SurfServerApplication.class, args);
+        Console console = new Console();
+        console.start();
         TCPServer tcpServer = new TCPServer();
         tcpServer.start();
         UDPServer udpServer = new UDPServer();
