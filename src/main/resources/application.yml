@@ -1,9 +1,14 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://39.107.229.253:3306/surf?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://127.0.0.1/surf?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: root
     password: 114514
+    hikari:
+      max-lifetime: 500000
+    tomcat:
+      test-on-borrow: on
+      validation-query: SELECT 1
 mybatis:
   mapper-locations: classpath:/com/dddqmmx/surf/service/mapper/*.xml
   type-aliases-package:

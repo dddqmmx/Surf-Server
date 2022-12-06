@@ -12,4 +12,12 @@
     <select id="getUserById" resultType="com.dddqmmx.surf.server.pojo.User">
         select * from user where id = #{id}
     </select>
+
+    <select id="hasUserName" resultType="int">
+        select count(1) as c from user where userName = #{userName};
+    </select>
+
+    <insert id="register">
+        insert into user (userName, password, name) VALUES (#{userName},#{password},#{userName});
+    </insert>
 </mapper>

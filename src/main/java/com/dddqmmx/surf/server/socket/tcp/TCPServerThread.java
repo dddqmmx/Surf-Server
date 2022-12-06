@@ -89,8 +89,22 @@ public class TCPServerThread extends Thread{
                         socketSession.set("user",user);
                         comeBackJson.put("login","true");
                         comeBackJson.put("id",user.getId());
+                        comeBackJson.put("message","登录成功");
                     }else {
-                        comeBackJson.put("login","false");
+                        boolean hasUserName = userService.hasUserName(userName);
+                        System.out.println(hasUserName);
+                        if (hasUserName) {
+                            System.out.println("false");
+                            comeBackJson.put("login","false");
+                            comeBackJson.put("message","密码错误");
+                        }else {
+                            userService.register(userName,password);
+                            user = userService.login(userName,password);
+                            socketSession.set("user",user);
+                            comeBackJson.put("login","true");
+                            comeBackJson.put("id",user.getId());
+                            comeBackJson.put("message","注册成功");
+                        }
                     }
                     comeBackJson.put("command",command);
                     send(comeBackJson);
@@ -216,7 +230,9 @@ public class TCPServerThread extends Thread{
         }
         SocketSession socketSession = ConnectList.getSocketSession(sessionId);
         User user = (User) socketSession.get("user");
-        ConnectList.userSessionMap.remove(user.getId());
+        if (user != null) {
+            ConnectList.userSessionMap.remove(user.getId());
+        }
     }
 
     public void send(String json){

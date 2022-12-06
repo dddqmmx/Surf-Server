@@ -16,8 +16,18 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    public boolean hasUserName(String userName) {
+        return userMapper.hasUserName(userName) > 0;
+    }
+
+    @Override
     public User login(String userName, String userPass) {
         return userMapper.login(userName, userPass);
+    }
+
+    @Override
+    public boolean register(String userName, String password) {
+        return userMapper.register(userName,password) > 0;
     }
 
     @Override

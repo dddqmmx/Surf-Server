@@ -10,7 +10,12 @@ import java.util.List;
 @Repository
 @Mapper
 public interface UserMapper {
+
+    int hasUserName(String userName);
+
     User login(@Param("userName") String userName,@Param("password") String password);
+
+    int register(@Param("userName") String userName,@Param("password") String password);
 
     User getUserById(int id);
 
