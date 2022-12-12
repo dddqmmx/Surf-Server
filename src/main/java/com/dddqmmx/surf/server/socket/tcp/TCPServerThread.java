@@ -190,6 +190,7 @@ public class TCPServerThread extends Thread{
                     comeBackJson.put("id",userById.getId());
                     comeBackJson.put("userName",userById.getUserName());
                     comeBackJson.put("name",userById.getName());
+                    comeBackJson.put("personalProfile",userById.getPersonalProfile());
                     send(comeBackJson);
                 } else if ("sendTextMessage".equals(command)){
                     SocketSession socketSession = ConnectList.getSocketSession(sessionId);

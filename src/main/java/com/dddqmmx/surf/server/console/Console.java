@@ -1,6 +1,7 @@
 package com.dddqmmx.surf.server.console;
 
 import com.dddqmmx.surf.server.socket.connect.ConnectList;
+import org.springframework.boot.SpringApplication;
 
 import java.util.Map;
 import java.util.Scanner;
@@ -16,6 +17,8 @@ public class Console extends Thread{
         while (true) {
             String command = scanner.nextLine();
             switch (command){
+                case "quit":
+
                 case "userSessionList":
                     Set<Map.Entry<Integer, String>> entrySet = ConnectList.userSessionMap.entrySet();
                     for (Map.Entry<Integer, String> e : entrySet){
