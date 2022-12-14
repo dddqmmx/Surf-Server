@@ -27,6 +27,7 @@ public class TCPServerThread extends Thread{
     private GroupService groupService;
     private MessageService messageService;
     private GroupMemberService groupMemberService;
+    private RelationService relationService;
 
     protected String sessionId;
     private final Socket socket;
@@ -38,6 +39,7 @@ public class TCPServerThread extends Thread{
         messageService = BeanUtil.getBean(MessageServiceImpl.class);
         messageService = BeanUtil.getBean(MessageServiceImpl.class);
         groupMemberService = BeanUtil.getBean(GroupMemberService.class);
+        relationService = BeanUtil.getBean(RelationService.class);
     }
 
     @Override
@@ -221,6 +223,15 @@ public class TCPServerThread extends Thread{
                             }
                         }
                     }
+                } else if ("addFriendRequest".equals(command)){
+                    int userId = jsonObject.getInt("userId");
+                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    User user = (User) socketSession.get("user");
+                    int code = relationService.addFriendRequest(userId, user.getId());
+                    JSONObject comeBackJson = new JSONObject();
+                    comeBackJson.put("command","addFriendRequest");
+                    comeBackJson.put("code",code);
+                    send(comeBackJson);
                 }
             }
             socket.close();
