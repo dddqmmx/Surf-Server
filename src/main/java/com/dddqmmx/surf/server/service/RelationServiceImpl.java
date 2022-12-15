@@ -1,8 +1,11 @@
 package com.dddqmmx.surf.server.service;
 
 import com.dddqmmx.surf.server.mapper.RelationMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.dddqmmx.surf.server.pojo.Relation;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service("relationService")
 public class RelationServiceImpl implements RelationService{
@@ -24,4 +27,27 @@ public class RelationServiceImpl implements RelationService{
         }
         return 1;
     }
+
+    @Override
+    public List<Relation> getFriendRequestByUserId(int userId) {
+        return relationMapper.getFriendRequestByUserId(userId);
+    }
+
+    @Override
+    public int agreeRequest(@Param("userId") int userId, @Param("otherSideId") int otherSideId) {
+        if (relationMapper.updateRelation(userId,otherSideId,1) > 0){
+            Relation friendRequest = relationMapper.getFriendRequestByUserIdAndOtherSideId(otherSideId, userId);
+            if (friendRequest != null){
+                if (relationMapper.updateRelation(otherSideId,userId,1) > 0){
+                    return 0;
+                }
+            }else {
+                if (relationMapper.insertRelation(otherSideId,userId,1) > 0){
+                    return 0;
+                }
+            }
+        }
+        return 1;
+    }
+
 }

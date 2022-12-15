@@ -11,6 +11,8 @@ import java.util.List;
 @Mapper
 public interface RelationMapper {
     int insertRelation(@Param("userId") int userId,@Param("otherSideId") int otherSideId,@Param("relationType") int relationType);
-    List<Relation> getRelationByUserId(int userId);
+    List<Relation> getFriendRequestByUserId(int userId);
     int hasRequest(@Param("userId") int userId,@Param("otherSideId") int otherSideId);
+    int updateRelation(@Param("userId") int userId,@Param("otherSideId") int otherSideId,@Param("relationType") int relationType);
+    Relation getFriendRequestByUserIdAndOtherSideId(@Param("userId") int userId,@Param("otherSideId") int otherSideId);
 }

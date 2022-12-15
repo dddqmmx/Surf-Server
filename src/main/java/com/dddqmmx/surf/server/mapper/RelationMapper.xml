@@ -5,11 +5,19 @@
         insert into relation(userId, otherSideId, relationType) value (#{userId},#{otherSideId},#{relationType});
     </insert>
 
-    <select id="getRelationByUserId" resultType="com.dddqmmx.surf.server.pojo.Relation">
-        select * from relation where userId = #{userId};
+    <select id="getFriendRequestByUserId" resultType="com.dddqmmx.surf.server.pojo.Relation">
+        select * from relation where userId = #{userId} and relationType = 0;
     </select>
 
     <select id="hasRequest" resultType="java.lang.Integer">
         select count(1) from relation where userId = #{userId} and otherSideId = #{otherSideId};
+    </select>
+
+    <update id="updateRelation">
+        update relation set relationType = #{relationType} where userId = #{userId} and otherSideId = #{otherSideId}
+    </update>
+
+    <select id="getFriendRequestByUserIdAndOtherSideId" resultType="com.dddqmmx.surf.server.pojo.Relation">
+        select * from relation where userId = #{userId} and otherSideId = #{otherSideId};
     </select>
 </mapper>

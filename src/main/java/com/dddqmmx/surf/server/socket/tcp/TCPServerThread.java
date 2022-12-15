@@ -1,10 +1,7 @@
 package com.dddqmmx.surf.server.socket.tcp;
 
 import com.dddqmmx.surf.server.mapper.GroupMemberMapper;
-import com.dddqmmx.surf.server.pojo.Group;
-import com.dddqmmx.surf.server.pojo.GroupMember;
-import com.dddqmmx.surf.server.pojo.Message;
-import com.dddqmmx.surf.server.pojo.User;
+import com.dddqmmx.surf.server.pojo.*;
 import com.dddqmmx.surf.server.service.*;
 import com.dddqmmx.surf.server.socket.connect.ConnectList;
 import com.dddqmmx.surf.server.socket.connect.SocketSession;
@@ -230,6 +227,30 @@ public class TCPServerThread extends Thread{
                     int code = relationService.addFriendRequest(userId, user.getId());
                     JSONObject comeBackJson = new JSONObject();
                     comeBackJson.put("command","addFriendRequest");
+                    comeBackJson.put("code",code);
+                    send(comeBackJson);
+                } else if ("getFriendRequest".equals(command)){
+                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    User user = (User) socketSession.get("user");
+                    List<Relation> relationList = relationService.getFriendRequestByUserId(user.getId());
+                    JSONObject comeBackJson = new JSONObject();
+                    JSONArray relationArray = new JSONArray();
+                    for(Relation relation : relationList){
+                        JSONObject json = new JSONObject();
+                        json.put("otherSideId",relation.getOtherSideId());
+                        relationArray.put(json);
+                    }
+                    comeBackJson.put("relationArray",relationArray);
+                    comeBackJson.put("command",command);
+                    send(comeBackJson);
+                } else if ("agreeRequest".equals(command)){
+                    int userId = jsonObject.getInt("userId");
+                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    User user = (User) socketSession.get("user");
+                    int code = relationService.agreeRequest(user.getId(), userId);
+                    JSONObject comeBackJson = new JSONObject();
+                    comeBackJson.put("command",command);
+                    comeBackJson.put("id",userId);
                     comeBackJson.put("code",code);
                     send(comeBackJson);
                 }
