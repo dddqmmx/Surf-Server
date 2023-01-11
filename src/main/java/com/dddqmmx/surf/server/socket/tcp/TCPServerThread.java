@@ -6,6 +6,7 @@ import com.dddqmmx.surf.server.service.*;
 import com.dddqmmx.surf.server.socket.connect.ConnectList;
 import com.dddqmmx.surf.server.socket.connect.SocketSession;
 import com.dddqmmx.surf.server.util.BeanUtil;
+import com.dddqmmx.surf.server.util.NumberUtil;
 import com.dddqmmx.surf.server.util.RandomCharacters;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -145,11 +146,7 @@ public class TCPServerThread extends Thread{
                     List<User> userFriendList = userService.getUserFriendList(user.getId());
                     JSONArray groupListArray = new JSONArray();
                     for(User userFriend : userFriendList){
-                        JSONObject json = new JSONObject();
-                        json.put("id",userFriend.getId());
-                        json.put("userName",userFriend.getUserName());
-                        json.put("name",userFriend.getName());
-                        groupListArray.put(json);
+                        groupListArray.put(userFriend.getId());
                     }
                     comeBackJson.put("userList",groupListArray);
                     comeBackJson.put("command",command);
@@ -235,10 +232,8 @@ public class TCPServerThread extends Thread{
                     List<Relation> relationList = relationService.getFriendRequestByUserId(user.getId());
                     JSONObject comeBackJson = new JSONObject();
                     JSONArray relationArray = new JSONArray();
-                    for(Relation relation : relationList){
-                        JSONObject json = new JSONObject();
-                        json.put("otherSideId",relation.getOtherSideId());
-                        relationArray.put(json);
+                    for(Relation relation : relationList){;
+                        relationArray.put(relation.getOtherSideId());
                     }
                     comeBackJson.put("relationArray",relationArray);
                     comeBackJson.put("command",command);
@@ -252,6 +247,70 @@ public class TCPServerThread extends Thread{
                     comeBackJson.put("command",command);
                     comeBackJson.put("id",userId);
                     comeBackJson.put("code",code);
+                    send(comeBackJson);
+                } else if ("selectGroup".equals(command)){
+                    String condition = jsonObject.getString("condition");
+                    boolean isNumeric = NumberUtil.isNumeric(condition);
+                    JSONArray jsonArray = new JSONArray();
+                    if (isNumeric){
+                        Group group = groupService.getGroupInfo(Integer.parseInt(condition));
+                        if (group != null){
+                            jsonArray.put(group.getId());
+                        }
+                    }else {
+                    }
+                    JSONObject comeBackJson = new JSONObject();
+                    comeBackJson.put("command",command);
+                    comeBackJson.put("groupList",jsonArray);
+                    send(comeBackJson);
+                }else if ("selectUser".equals(command)){
+                    String condition = jsonObject.getString("condition");
+                    boolean isNumeric = NumberUtil.isNumeric(condition);
+                    JSONArray jsonArray = new JSONArray();
+                    if (isNumeric){
+                        User user = userService.getUserById(Integer.parseInt(condition));
+                        if (user != null){
+                            jsonArray.put(user.getId());
+                        }
+                    }else {
+
+                    }
+                    JSONObject comeBackJson = new JSONObject();
+                    comeBackJson.put("command",command);
+                    comeBackJson.put("userList",jsonArray);
+                    send(comeBackJson);
+                }else if ("getGroupInfoById".equals(command)) {
+                    int groupId = jsonObject.getInt("groupId");
+                    Group groupById = groupService.getGroupInfo(groupId);
+                    JSONObject comeBackJson = new JSONObject();
+                    comeBackJson.put("command", command);
+                    comeBackJson.put("id", groupById.getId());
+                    comeBackJson.put("groupName", groupById.getGroupName());
+                    comeBackJson.put("groupHead", groupById.getGroupHead());
+                    send(comeBackJson);
+                } else if ("addGroupRequest".equals(command)){
+                    int groupId = jsonObject.getInt("groupId");
+                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    User user = (User) socketSession.get("user");
+                    int code = groupMemberService.addGroupRequest(user.getId(),groupId);
+                    JSONObject comeBackJson = new JSONObject();
+                    comeBackJson.put("command","addGroupRequest");
+                    comeBackJson.put("code",code);
+                    send(comeBackJson);
+                } else if ("getGroupRequest".equals(command)){
+                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    User user = (User) socketSession.get("user");
+                    List<GroupMember> groupRequestList = groupMemberService.getAddGroupRequestListByUserId(user.getId());
+                    JSONObject comeBackJson = new JSONObject();
+                    JSONArray relationArray = new JSONArray();
+                    for (GroupMember groupMember : groupRequestList){
+                        JSONObject groupRequest = new JSONObject();
+                        groupRequest.put("groupId",groupMember.getGroupId());
+                        groupRequest.put("userId",groupMember.getUserId());
+                        relationArray.put(groupMember);
+                    }
+                    comeBackJson.put("relationArray",relationArray);
+                    comeBackJson.put("command",command);
                     send(comeBackJson);
                 }
             }

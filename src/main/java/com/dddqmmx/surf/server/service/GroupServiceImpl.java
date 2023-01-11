@@ -24,4 +24,5 @@ public class GroupServiceImpl implements GroupService{
     public Group getGroupInfo(int groupId) {
         return groupMapper.getGroupInfo(groupId);
     }
+
 }

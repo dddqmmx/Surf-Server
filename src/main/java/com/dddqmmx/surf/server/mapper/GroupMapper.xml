@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.dddqmmx.surf.server.mapper.GroupMapper">
     <select id="geGroupListByUserId" resultType="com.dddqmmx.surf.server.pojo.Group">
-        select * from `group` where id in (select groupId from group_member where userId = #{userId});
+        select * from `group` where id in (select groupId from group_member where userId = #{userId} and permissionId != 0);
     </select>
 
     <select id="getGroupInfo" resultType="com.dddqmmx.surf.server.pojo.Group">

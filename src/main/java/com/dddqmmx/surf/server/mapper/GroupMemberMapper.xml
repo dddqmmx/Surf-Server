@@ -5,4 +5,16 @@
 <select id="getGroupMemberListByGroupId" resultType="com.dddqmmx.surf.server.pojo.GroupMember">
     select * from group_member where groupId = #{groupId}
 </select>
+
+<insert id="insertGroupRequest">
+    insert into group_member(groupId, userId, permissionId) VALUES (#{groupId},#{userId},#{permissionId});
+</insert>
+
+<select id="hasRequest" resultType="int">
+    select count(1) from group_member where userId = #{userId} and groupId = #{groupId} and permissionId = 0
+</select>
+
+<select id="getAddGroupRequestListByUserId" resultType="com.dddqmmx.surf.server.pojo.GroupMember">
+    select * from group_member where groupId in (select groupId from group_member where userId = #{userId} and permissionId = 2) and permissionId = 0;
+</select>
 </mapper>

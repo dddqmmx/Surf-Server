@@ -10,7 +10,7 @@
     </select>
 
     <select id="hasRequest" resultType="java.lang.Integer">
-        select count(1) from relation where userId = #{userId} and otherSideId = #{otherSideId};
+        select count(1) from relation where userId = #{userId} and otherSideId = #{otherSideId} and relationType = 0;
     </select>
 
     <update id="updateRelation">
