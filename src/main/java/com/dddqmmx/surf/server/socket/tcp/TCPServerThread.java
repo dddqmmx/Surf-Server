@@ -238,11 +238,11 @@ public class TCPServerThread extends Thread{
                     comeBackJson.put("relationArray",relationArray);
                     comeBackJson.put("command",command);
                     send(comeBackJson);
-                } else if ("agreeRequest".equals(command)){
+                } else if ("agreeFriendRequest".equals(command)){
                     int userId = jsonObject.getInt("userId");
                     SocketSession socketSession = ConnectList.getSocketSession(sessionId);
                     User user = (User) socketSession.get("user");
-                    int code = relationService.agreeRequest(user.getId(), userId);
+                    int code = relationService.agreeFriendRequest(user.getId(), userId);
                     JSONObject comeBackJson = new JSONObject();
                     comeBackJson.put("command",command);
                     comeBackJson.put("id",userId);
@@ -295,6 +295,7 @@ public class TCPServerThread extends Thread{
                     int code = groupMemberService.addGroupRequest(user.getId(),groupId);
                     JSONObject comeBackJson = new JSONObject();
                     comeBackJson.put("command","addGroupRequest");
+                    comeBackJson.put("id",groupId);
                     comeBackJson.put("code",code);
                     send(comeBackJson);
                 } else if ("getGroupRequest".equals(command)){
@@ -307,7 +308,7 @@ public class TCPServerThread extends Thread{
                         JSONObject groupRequest = new JSONObject();
                         groupRequest.put("groupId",groupMember.getGroupId());
                         groupRequest.put("userId",groupMember.getUserId());
-                        relationArray.put(groupMember);
+                        relationArray.put(groupRequest);
                     }
                     comeBackJson.put("relationArray",relationArray);
                     comeBackJson.put("command",command);

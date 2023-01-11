@@ -34,7 +34,7 @@ public class RelationServiceImpl implements RelationService{
     }
 
     @Override
-    public int agreeRequest(@Param("userId") int userId, @Param("otherSideId") int otherSideId) {
+    public int agreeFriendRequest(@Param("userId") int userId, @Param("otherSideId") int otherSideId) {
         if (relationMapper.updateRelation(userId,otherSideId,1) > 0){
             Relation friendRequest = relationMapper.getFriendRequestByUserIdAndOtherSideId(otherSideId, userId);
             if (friendRequest != null){

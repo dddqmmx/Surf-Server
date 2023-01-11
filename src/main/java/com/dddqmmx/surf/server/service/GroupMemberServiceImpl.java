@@ -35,6 +35,6 @@ public class GroupMemberServiceImpl implements GroupMemberService{
 
     @Override
     public List<GroupMember> getAddGroupRequestListByUserId(int userId) {
-        return groupMemberMapper.getGroupMemberListByGroupId(userId);
+        return groupMemberMapper.getAddGroupRequestListByUserId(userId);
     }
 }

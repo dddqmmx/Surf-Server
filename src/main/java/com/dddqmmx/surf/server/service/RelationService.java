@@ -8,6 +8,6 @@ import java.util.List;
 public interface RelationService {
     int addFriendRequest(@Param("userId") int userId,@Param("otherSideId") int otherSideId);
     List<Relation> getFriendRequestByUserId(int userId);
-    int agreeRequest(@Param("userId") int userId,@Param("otherSideId") int otherSideId);
+    int agreeFriendRequest(@Param("userId") int userId,@Param("otherSideId") int otherSideId);
 
 }
