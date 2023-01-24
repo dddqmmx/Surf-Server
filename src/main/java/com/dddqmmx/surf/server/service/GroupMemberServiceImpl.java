@@ -37,4 +37,9 @@ public class GroupMemberServiceImpl implements GroupMemberService{
     public List<GroupMember> getAddGroupRequestListByUserId(int userId) {
         return groupMemberMapper.getAddGroupRequestListByUserId(userId);
     }
+
+    @Override
+    public boolean agreeGroupRequest(int groupMemberId) {
+        return groupMemberMapper.updatePermissionId(groupMemberId,1) >0;
+    }
 }

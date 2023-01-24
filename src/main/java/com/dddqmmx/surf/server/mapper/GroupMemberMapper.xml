@@ -11,10 +11,14 @@
 </insert>
 
 <select id="hasRequest" resultType="int">
-    select count(1) from group_member where userId = #{userId} and groupId = #{groupId} and permissionId = 0
+    select count(1) from group_member where userId = #{userId} and groupId = #{groupId} and permissionId = 0;
 </select>
 
 <select id="getAddGroupRequestListByUserId" resultType="com.dddqmmx.surf.server.pojo.GroupMember">
     select * from group_member where groupId in (select groupId from group_member where userId = #{userId} and permissionId = 2) and permissionId = 0;
 </select>
+
+<update id="updatePermissionId">
+    update group_member set permissionId = #{permissionId} where id = #{groupMemberId}
+</update>
 </mapper>

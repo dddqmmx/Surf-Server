@@ -11,7 +11,8 @@ import java.util.List;
 @Mapper
 public interface GroupMemberMapper {
     List<GroupMember> getGroupMemberListByGroupId(int groupId);
-    int insertGroupRequest(int userId,int groupId,int permissionId);
-    int hasRequest(int userId, int groupId);
+    int insertGroupRequest(@Param("userId") int userId,@Param("groupId") int groupId,@Param("permissionId") int permissionId);
+    int hasRequest(@Param("userId") int userId,@Param("groupId") int groupId);
     List<GroupMember> getAddGroupRequestListByUserId(int userId);
+    int updatePermissionId(@Param("groupMemberId") int groupMemberId,@Param("permissionId") int permissionId);
 }

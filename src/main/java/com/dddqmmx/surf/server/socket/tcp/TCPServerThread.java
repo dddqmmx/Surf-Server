@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
@@ -306,12 +308,29 @@ public class TCPServerThread extends Thread{
                     JSONArray relationArray = new JSONArray();
                     for (GroupMember groupMember : groupRequestList){
                         JSONObject groupRequest = new JSONObject();
+                        groupRequest.put("id",groupMember.getId());
                         groupRequest.put("groupId",groupMember.getGroupId());
                         groupRequest.put("userId",groupMember.getUserId());
                         relationArray.put(groupRequest);
                     }
                     comeBackJson.put("relationArray",relationArray);
                     comeBackJson.put("command",command);
+                    send(comeBackJson);
+                } else if ("agreeGroupRequest".equals(command)){
+                    int groupMemberId = jsonObject.getInt("groupMemberId");
+                    boolean bool = groupMemberService.agreeGroupRequest(groupMemberId);
+                    JSONObject comeBackJson = new JSONObject();
+                    comeBackJson.put("command",command);
+                    comeBackJson.put("groupMemberId",groupMemberId);
+                    comeBackJson.put("bool",bool);
+                    send(comeBackJson);
+                } else if ("getGroupHead".equals(command)) {
+                    int groupId = jsonObject.getInt("groupId");
+                    String encode = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get("surf/image/group/"+groupId+".png")));
+                    JSONObject comeBackJson = new JSONObject();
+                    comeBackJson.put("command",command);
+                    comeBackJson.put("encode",encode);
+                    comeBackJson.put("groupId",groupId);
                     send(comeBackJson);
                 }
             }
