@@ -20,7 +20,7 @@ public class Console extends Thread{
                 case "quit":
 
                 case "userSessionList":
-                    Set<Map.Entry<Integer, String>> entrySet = ConnectList.userSessionMap.entrySet();
+                    Set<Map.Entry<Integer, String>> entrySet = ConnectList.userSession.entrySet();
                     for (Map.Entry<Integer, String> e : entrySet){
                         //entry表示一对键和值，同样提供了获取对应键和值的方法
                         //获取entry对象中的键

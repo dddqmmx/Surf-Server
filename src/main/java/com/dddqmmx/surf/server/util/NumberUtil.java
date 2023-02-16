@@ -11,4 +11,13 @@ public class NumberUtil {
         return true;
     }
 
+    private static int toInt(byte[] bytes) {
+        int result = 0;
+        for (int i = 0; i < 4; i++) {
+            result <<= 8;
+            result |= bytes[i] & 0xFF;
+        }
+        return result;
+    }
+
 }

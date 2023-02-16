@@ -1,27 +1,40 @@
 package com.dddqmmx.surf.server.socket.tcp;
 
-import com.dddqmmx.surf.server.mapper.GroupMemberMapper;
 import com.dddqmmx.surf.server.pojo.*;
 import com.dddqmmx.surf.server.service.*;
 import com.dddqmmx.surf.server.socket.connect.ConnectList;
 import com.dddqmmx.surf.server.socket.connect.SocketSession;
+import com.dddqmmx.surf.server.util.MessageUtil;
 import com.dddqmmx.surf.server.util.BeanUtil;
 import com.dddqmmx.surf.server.util.NumberUtil;
 import com.dddqmmx.surf.server.util.RandomCharacters;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
 
 public class TCPServerThread extends Thread{
+
+    //被占用的的messageId
+    public byte[] occupiedMessageId = new byte[256];
+    /*字节的最大上限如果发送消息的时候messageId等于maxMessageId则把message设置为minMessageId
+    因为以后可能会改成int,long啥的就把max和min写上了
+     */
+    public byte maxMessageId = 127;
+    //字节的最小上限;
+    public byte minMessageId = -128;
+    //存储下个message的
+    public byte messageId = -128;
+
+    private BufferedOutputStream bufferedOutputStream = null;
+    private BufferedInputStream bufferedInputStream = null;
 
     private UserService userService;
     private GroupService groupService;
@@ -29,11 +42,14 @@ public class TCPServerThread extends Thread{
     private GroupMemberService groupMemberService;
     private RelationService relationService;
 
+    public static Map<Byte,ByteArrayOutputStream> byteArrayOutputStreamMap = new HashMap<>();
+
     protected String sessionId;
     private final Socket socket;
 
-    public TCPServerThread(Socket socket) {
+    public TCPServerThread(Socket socket,String sessionId) {
         this.socket = socket;
+        this.sessionId = sessionId;
         userService = BeanUtil.getBean(UserServiceImpl.class);
         groupService = BeanUtil.getBean(GroupServiceImpl.class);
         messageService = BeanUtil.getBean(MessageServiceImpl.class);
@@ -42,9 +58,83 @@ public class TCPServerThread extends Thread{
         relationService = BeanUtil.getBean(RelationService.class);
     }
 
+
     @Override
     public void run() {
         try {
+            bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
+            bufferedInputStream = new BufferedInputStream(socket.getInputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            InputStream inputStream = socket.getInputStream();
+            byte[] buffer = new byte[1024];
+            int length;
+            byte[] messageBytes = new byte[0];
+            while ((length = inputStream.read(buffer)) != -1) {
+                // 将读取到的字节流拼接到之前的消息字节数组中
+                messageBytes = Arrays.copyOf(messageBytes, messageBytes.length + length);
+                System.arraycopy(buffer, 0, messageBytes, messageBytes.length - length, length);
+
+                // 如果读取到的字节流中包含完整的消息，则将其分离出来并处理
+                while (messageBytes.length >= 4) {
+                    byte[] messageHeader = Arrays.copyOfRange(messageBytes, 0, 4); // 取前 4 个字节作为消息头
+                    ByteBuffer buffer1 = ByteBuffer.wrap(messageHeader); // 使用 ByteBuffer 对消息头进行解析
+                    int messageLength = buffer1.getInt(); // 解析消息头中的消息长度
+                    //byte[] messageData = Arrays.copyOfRange(messageBytes, 4, 4 + messageLength);
+                    // 如果读取到的字节流中包含完整的消息，则将其分离出来并处理
+                    if (messageBytes.length >= 4 + messageLength)
+                    {
+                        byte[] message = Arrays.copyOfRange(messageBytes, 4, 4 + messageLength);
+                        processMessage(message);
+                        messageBytes = Arrays.copyOfRange(messageBytes, 4 + messageLength, messageBytes.length);
+                    } else {
+                        break;
+                    }
+                }
+            }
+        } catch (IOException | JSONException e) {
+            throw new RuntimeException(e);
+        }
+        //send("烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希123");
+        int o = 0;
+        while(true) {
+            byte[] by = new byte[1024+3];        //保存包里的字节
+            int res = 0;                         //字节长度
+            byte messageId;                      //消息id
+            ByteArrayOutputStream byteArrayOutputStream;    //把分段发送的字节存到这里,用来读取
+            String command;                                 //消息发完消息字符串放在这里
+            byte transferCompleteFlag;                      //消息是否发完的标记
+            try {
+                res = bufferedInputStream.read(by);         //获得一个消息一共有多少字节
+                messageId = by[0];                          //获得消息id
+                transferCompleteFlag = by[2];               //获得消息是否发送完的标记
+                if (by[1] == 1) {
+                    // 利用String构造方法的形式，将字节数组转化成字符串打印出来
+                    if (byteArrayOutputStreamMap.containsKey(messageId)) {
+                        byteArrayOutputStream = byteArrayOutputStreamMap.get(messageId);
+                        byteArrayOutputStream.write(by, 3, res - 3);
+                        byteArrayOutputStream.flush();
+                        byteArrayOutputStream.close();
+                    } else {
+                        byteArrayOutputStream = new ByteArrayOutputStream();
+                        byteArrayOutputStream.write(by, 3, res - 3);
+                        byteArrayOutputStream.flush();
+                        byteArrayOutputStream.close();
+                        byteArrayOutputStreamMap.put(messageId, byteArrayOutputStream);
+                    }
+                    if (transferCompleteFlag == 1) {
+                        System.out.println("Server get : "+messageId+" : " + byteArrayOutputStreamMap.get(messageId).toString(StandardCharsets.UTF_8));
+
+                    }
+
+                }
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        /*try {
             //从socket通信管道中得到一个字节输入流
             InputStream is = socket.getInputStream();
             //把字节输入流转换成字符输入流
@@ -57,37 +147,69 @@ public class TCPServerThread extends Thread{
                 //消息处理
                 System.out.println("TCP : "+line);
 
-                JSONObject jsonObject = new JSONObject(line);
+
+            }
+            socket.close();
+            System.out.println("over");
+        }catch (Exception e){
+            e.printStackTrace();
+            System.out.println("客户端"+socket.getRemoteSocketAddress()+"下线了。");
+        }*/
+
+    }
+
+
+    private void processMessage(byte[] bytes) throws IOException, JSONException {
+        byte messageId = bytes[0];
+        byte transferCompleteFlag = bytes[2];
+        if (bytes[1] == 1) {
+            if (byteArrayOutputStreamMap.containsKey(messageId)) {
+                ByteArrayOutputStream byteArrayOutputStream = byteArrayOutputStreamMap.get(messageId);
+                byteArrayOutputStream.write(bytes, 3, bytes.length - 3);
+                byteArrayOutputStream.flush();
+                byteArrayOutputStream.close();
+            } else {
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                byteArrayOutputStream.write(bytes, 3, bytes.length - 3);
+                byteArrayOutputStream.flush();
+                byteArrayOutputStream.close();
+                byteArrayOutputStreamMap.put(messageId, byteArrayOutputStream);
+            }
+            if (transferCompleteFlag == 1) {
+                System.out.println(Arrays.toString(byteArrayOutputStreamMap.get(messageId).toByteArray()));
+                String msg = byteArrayOutputStreamMap.get(messageId).toString("UTF-8");
+                System.out.println(msg);
+                JSONObject jsonObject = new JSONObject(byteArrayOutputStreamMap.get(messageId).toString(StandardCharsets.UTF_8));
                 //获取客户端提交json的命令
                 String command = jsonObject.getString("command");
-
                 if ("connect".equals(command)){
                     //获得ip地址
                     String system = jsonObject.getString("system");
                     if (system.equals("android")){
-                        /*随机生成32位数的sessionId*/
-                        sessionId = RandomCharacters.random(32);
-                        while (ConnectList.hasSessionId(sessionId)) {
-                            sessionId = RandomCharacters.random(32);
-                        }
-                        SocketSession socketSession = new SocketSession();
-                        ConnectList.setSocketSession(sessionId,socketSession);
-                        ConnectList.setThread(sessionId,this);
-                        JSONObject comeBackJson = new JSONObject();
-                        comeBackJson.put("command",command);
-                        comeBackJson.put("connect","true");
-                        comeBackJson.put("sessionId",sessionId);
-                        System.out.println(sessionId);
-                        send(comeBackJson);
+                        /* *//*随机生成32位数的sessionId*//*
+                                sessionId = RandomCharacters.random(32);
+                                while (ConnectList.sessionList.containsKey(sessionId)) {
+                                    sessionId = RandomCharacters.random(32);
+                                }
+                                SocketSession socketSession = new SocketSession();
+                                ConnectList.setSocketSession(sessionId,socketSession);
+                                ConnectList.setThread(sessionId,this);
+                                JSONObject comeBackJson = new JSONObject();
+                                comeBackJson.put("command",command);
+                                comeBackJson.put("connect","true");
+                                comeBackJson.put("sessionId",sessionId);
+                                System.out.println(sessionId);
+                                send(comeBackJson);*/
                     }
                 } else if ("login".equals(command)){
                     String userName = jsonObject.getString("userName");
                     String password = jsonObject.getString("password");
-                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    SocketSession socketSession = ConnectList.sessionList.get(sessionId);
+
                     User user = userService.login(userName,password);
                     JSONObject comeBackJson = new JSONObject();
                     if (user != null){
-                        ConnectList.userSessionMap.put(user.getId(),sessionId);
+                        ConnectList.userSession.put(user.getId(),sessionId);
                         socketSession.set("user",user);
                         comeBackJson.put("login","true");
                         comeBackJson.put("id",user.getId());
@@ -114,7 +236,7 @@ public class TCPServerThread extends Thread{
                     JSONObject comeBackJson = new JSONObject();
                     User user = null;
                     if (!jsonObject.has("userId")){
-                        SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                        SocketSession socketSession = ConnectList.sessionList.get(sessionId);
                         user = (User) socketSession.get("user");
                     } else {
                         System.out.println("error");
@@ -127,7 +249,7 @@ public class TCPServerThread extends Thread{
                     send(comeBackJson);
                 } else if ("getGroupList".equals(command)) {
                     JSONObject comeBackJson = new JSONObject();
-                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    SocketSession socketSession = ConnectList.sessionList.get(sessionId);
                     User user = (User) socketSession.get("user");
                     List<Group> groupList = groupService.geGroupListByUserId(user.getId());
                     JSONArray groupListArray = new JSONArray();
@@ -143,7 +265,7 @@ public class TCPServerThread extends Thread{
                     send(comeBackJson);
                 } else if ("getUserFriendList".equals(command)){
                     JSONObject comeBackJson = new JSONObject();
-                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    SocketSession socketSession = ConnectList.sessionList.get(sessionId);
                     User user = (User) socketSession.get("user");
                     List<User> userFriendList = userService.getUserFriendList(user.getId());
                     JSONArray groupListArray = new JSONArray();
@@ -191,7 +313,7 @@ public class TCPServerThread extends Thread{
                     comeBackJson.put("personalProfile",userById.getPersonalProfile());
                     send(comeBackJson);
                 } else if ("sendTextMessage".equals(command)){
-                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    SocketSession socketSession = ConnectList.sessionList.get(sessionId);
                     User user = (User) socketSession.get("user");
                     int contactType = jsonObject.getInt("contactType");
                     int contactId = jsonObject.getInt("contactId");
@@ -212,16 +334,16 @@ public class TCPServerThread extends Thread{
                         messageService.insertMessage(saveMessage);
                         for (GroupMember groupMember : groupMemberService.getGroupMemberListByGroupId(contactId)) {
                             int userId = groupMember.getUserId();
-                            if (ConnectList.userSessionMap.containsKey(userId) && userId != user.getId()){
-                                String sessionId = ConnectList.userSessionMap.get(userId);
-                                TCPServerThread thread = ConnectList.getThread(sessionId);
+                            if (ConnectList.userSession.containsKey(userId) && userId != user.getId()){
+                                String sessionId = ConnectList.userSession.get(userId);
+                                TCPServerThread thread = ConnectList.connectList.get(sessionId).getTcpServerThread();
                                 thread.send(comeBackJson);
                             }
                         }
                     }
                 } else if ("addFriendRequest".equals(command)){
                     int userId = jsonObject.getInt("userId");
-                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    SocketSession socketSession = ConnectList.sessionList.get(sessionId);
                     User user = (User) socketSession.get("user");
                     int code = relationService.addFriendRequest(userId, user.getId());
                     JSONObject comeBackJson = new JSONObject();
@@ -229,7 +351,7 @@ public class TCPServerThread extends Thread{
                     comeBackJson.put("code",code);
                     send(comeBackJson);
                 } else if ("getFriendRequest".equals(command)){
-                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    SocketSession socketSession = ConnectList.sessionList.get(sessionId);
                     User user = (User) socketSession.get("user");
                     List<Relation> relationList = relationService.getFriendRequestByUserId(user.getId());
                     JSONObject comeBackJson = new JSONObject();
@@ -242,7 +364,7 @@ public class TCPServerThread extends Thread{
                     send(comeBackJson);
                 } else if ("agreeFriendRequest".equals(command)){
                     int userId = jsonObject.getInt("userId");
-                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    SocketSession socketSession = ConnectList.sessionList.get(sessionId);
                     User user = (User) socketSession.get("user");
                     int code = relationService.agreeFriendRequest(user.getId(), userId);
                     JSONObject comeBackJson = new JSONObject();
@@ -292,7 +414,7 @@ public class TCPServerThread extends Thread{
                     send(comeBackJson);
                 } else if ("addGroupRequest".equals(command)){
                     int groupId = jsonObject.getInt("groupId");
-                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    SocketSession socketSession = ConnectList.sessionList.get(sessionId);
                     User user = (User) socketSession.get("user");
                     int code = groupMemberService.addGroupRequest(user.getId(),groupId);
                     JSONObject comeBackJson = new JSONObject();
@@ -301,7 +423,7 @@ public class TCPServerThread extends Thread{
                     comeBackJson.put("code",code);
                     send(comeBackJson);
                 } else if ("getGroupRequest".equals(command)){
-                    SocketSession socketSession = ConnectList.getSocketSession(sessionId);
+                    SocketSession socketSession = ConnectList.sessionList.get(sessionId);
                     User user = (User) socketSession.get("user");
                     List<GroupMember> groupRequestList = groupMemberService.getAddGroupRequestListByUserId(user.getId());
                     JSONObject comeBackJson = new JSONObject();
@@ -334,34 +456,53 @@ public class TCPServerThread extends Thread{
                     send(comeBackJson);
                 }
             }
-            socket.close();
-            System.out.println("over");
-        }catch (Exception e){
-            e.printStackTrace();
-            System.out.println("客户端"+socket.getRemoteSocketAddress()+"下线了。");
-        }
-        SocketSession socketSession = ConnectList.getSocketSession(sessionId);
-        User user = (User) socketSession.get("user");
-        if (user != null) {
-            ConnectList.userSessionMap.remove(user.getId());
         }
     }
 
-    public void send(String json){
-        System.out.println("TCPSend : "+ json);
-        try {
-            OutputStreamWriter outputStream = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
-            PrintWriter printWriter = new PrintWriter(outputStream,true);
-            printWriter.println(json);
-            /*printWriter.flush();*/
-            /*PrintStream ps = new PrintStream(outputStream,true);
-            ps.println(json);
-            ps.flush();*/
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+
+
+    public void send(JSONObject jsonObject){
+        send(jsonObject.toString());
+    }
+
+    public void send(String message){
+        byte messageId = getMessageId();
+        System.out.println("Server send : "+messageId+" : "+message);
+        byte[] sb = message.getBytes(); // 转化为字节数组
+        ArrayList<byte[]> newByteArr = MessageUtil.reviseArr(sb, messageId);
+        for (byte[] bytes : newByteArr) {
+            try {
+                BufferedOutputStream ps = new BufferedOutputStream(socket.getOutputStream());
+                System.out.println(Arrays.toString(bytes));
+                //
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
+                dataOutputStream.writeInt(bytes.length);
+                System.out.println(bytes.length);
+                dataOutputStream.write(bytes);
+                dataOutputStream.flush();
+                byte[] messageBytes = byteArrayOutputStream.toByteArray();
+                //
+                ps.write(messageBytes);   // 写入输出流，将内容发送给客户端的输入流
+                ps.flush();
+                //ps.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            /*try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }*/
         }
     }
-    public void send(Object object){
-        send(object.toString());
+
+    public byte getMessageId(){
+        synchronized (this) {
+            if (messageId == maxMessageId){
+                messageId =  minMessageId;
+            }
+            return messageId++;
+        }
     }
 }
