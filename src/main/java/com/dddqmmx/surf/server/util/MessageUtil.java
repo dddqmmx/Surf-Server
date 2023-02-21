@@ -12,7 +12,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class MessageUtil {
     public static int maxBytes = 1024;
-    public static ArrayList<byte[]> reviseArr(byte[] by, byte messageId) {
+    public static ArrayList<byte[]> reviseArr(byte[] by, byte messageId,byte messageType) {
         ArrayList<byte[]> result = new ArrayList<>();
         int cycles = by.length/maxBytes;
         int lastArrayLength = by.length % maxBytes;
@@ -33,7 +33,7 @@ public class MessageUtil {
                 byteIndex++;
             }
             bytes[0] = messageId;
-            bytes[1] = 1;
+            bytes[1] = messageType;
             if (cycles-1 == i){
                 System.out.println(messageId+":ok");
                 bytes[2] = 1;

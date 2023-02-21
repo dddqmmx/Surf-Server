@@ -8,8 +8,8 @@ public class User implements Serializable {
     private String userName;
     private String password;
     private String name;
-
     private String personalProfile;
+    private Integer avatar;
     public Integer getId() {
         return id;
     }
@@ -50,6 +50,14 @@ public class User implements Serializable {
         this.personalProfile = personal_profile;
     }
 
+    public Integer getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(Integer avatar) {
+        this.avatar = avatar;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -57,6 +65,7 @@ public class User implements Serializable {
                 ", userName='" + userName + '\'' +
                 ", password='" + password + '\'' +
                 ", name='" + name + '\'' +
+                ", avatar=" + avatar +
                 ", personalProfile='" + personalProfile + '\'' +
                 '}';
     }

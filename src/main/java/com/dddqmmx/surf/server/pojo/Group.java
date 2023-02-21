@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class Group implements Serializable {
     private Integer id;
     private String groupName;
-    private String groupHead;
+    private Integer groupAvatar;
 
     public Integer getId() {
         return id;
@@ -23,20 +23,20 @@ public class Group implements Serializable {
         this.groupName = groupName;
     }
 
-    public String getGroupHead() {
-        return groupHead;
+    public Integer getGroupAvatar() {
+        return groupAvatar;
     }
 
-    public void setGroupHead(String groupHead) {
-        this.groupHead = groupHead;
+    public void setGroupAvatar(Integer groupAvatar) {
+        this.groupAvatar = groupAvatar;
     }
 
     @Override
     public String toString() {
-        return "GroupMapper{" +
+        return "Group{" +
                 "id=" + id +
                 ", groupName='" + groupName + '\'' +
-                ", groupHead='" + groupHead + '\'' +
+                ", groupAvatar=" + groupAvatar +
                 '}';
     }
 }

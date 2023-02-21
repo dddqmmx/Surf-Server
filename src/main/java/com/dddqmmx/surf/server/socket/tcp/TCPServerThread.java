@@ -4,15 +4,13 @@ import com.dddqmmx.surf.server.pojo.*;
 import com.dddqmmx.surf.server.service.*;
 import com.dddqmmx.surf.server.socket.connect.ConnectList;
 import com.dddqmmx.surf.server.socket.connect.SocketSession;
-import com.dddqmmx.surf.server.util.MessageUtil;
-import com.dddqmmx.surf.server.util.BeanUtil;
-import com.dddqmmx.surf.server.util.NumberUtil;
-import com.dddqmmx.surf.server.util.RandomCharacters;
+import com.dddqmmx.surf.server.util.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.io.File;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -62,12 +60,6 @@ public class TCPServerThread extends Thread{
     @Override
     public void run() {
         try {
-            bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
-            bufferedInputStream = new BufferedInputStream(socket.getInputStream());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
             InputStream inputStream = socket.getInputStream();
             byte[] buffer = new byte[1024];
             int length;
@@ -98,7 +90,7 @@ public class TCPServerThread extends Thread{
             throw new RuntimeException(e);
         }
         //send("烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希烂裤裆後藤希123");
-        int o = 0;
+/*        int o = 0;
         while(true) {
             byte[] by = new byte[1024+3];        //保存包里的字节
             int res = 0;                         //字节长度
@@ -133,7 +125,7 @@ public class TCPServerThread extends Thread{
             }catch (Exception e) {
                 e.printStackTrace();
             }
-        }
+        }*/
         /*try {
             //从socket通信管道中得到一个字节输入流
             InputStream is = socket.getInputStream();
@@ -176,6 +168,7 @@ public class TCPServerThread extends Thread{
                 byteArrayOutputStreamMap.put(messageId, byteArrayOutputStream);
             }
             if (transferCompleteFlag == 1) {
+
                 System.out.println(Arrays.toString(byteArrayOutputStreamMap.get(messageId).toByteArray()));
                 String msg = byteArrayOutputStreamMap.get(messageId).toString("UTF-8");
                 System.out.println(msg);
@@ -206,7 +199,10 @@ public class TCPServerThread extends Thread{
                     String password = jsonObject.getString("password");
                     SocketSession socketSession = ConnectList.sessionList.get(sessionId);
 
+                    System.out.println(userName+" : "+password);
                     User user = userService.login(userName,password);
+
+                    System.out.println(user.getName()+"登录了");
                     JSONObject comeBackJson = new JSONObject();
                     if (user != null){
                         ConnectList.userSession.put(user.getId(),sessionId);
@@ -257,7 +253,6 @@ public class TCPServerThread extends Thread{
                         JSONObject json = new JSONObject();
                         json.put("id",group.getId());
                         json.put("groupName",group.getGroupName());
-                        json.put("groupHead",group.getGroupHead());
                         groupListArray.put(json);
                     }
                     comeBackJson.put("groupList",groupListArray);
@@ -410,7 +405,6 @@ public class TCPServerThread extends Thread{
                     comeBackJson.put("command", command);
                     comeBackJson.put("id", groupById.getId());
                     comeBackJson.put("groupName", groupById.getGroupName());
-                    comeBackJson.put("groupHead", groupById.getGroupHead());
                     send(comeBackJson);
                 } else if ("addGroupRequest".equals(command)){
                     int groupId = jsonObject.getInt("groupId");
@@ -448,28 +442,50 @@ public class TCPServerThread extends Thread{
                     send(comeBackJson);
                 } else if ("getGroupHead".equals(command)) {
                     int groupId = jsonObject.getInt("groupId");
-                    String encode = Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get("surf/image/group/"+groupId+".png")));
-                    JSONObject comeBackJson = new JSONObject();
-                    comeBackJson.put("command",command);
-                    comeBackJson.put("encode",encode);
-                    comeBackJson.put("groupId",groupId);
-                    send(comeBackJson);
+                    Group group = groupService.getGroupInfo(groupId);
+                    if(null != group.getGroupAvatar()){
+                        int fileId = group.getGroupAvatar();
+                        File fileName = FileUtil.getFileName(fileId);
+                        byte fileMessageId = getMessageId();
+                        if (fileName.exists()){
+                            JSONObject comeBackJson = new JSONObject();
+                            comeBackJson.put("command",command);
+                            comeBackJson.put("fileMessageId",fileMessageId);
+                            comeBackJson.put("groupId",groupId);
+                            send(comeBackJson);
+                        }
+                        File file = FileUtil.getFileName(groupId);
+                        sendFile(Files.readAllBytes(file.toPath()), (byte) fileId);
+                    }
+                    /*String path = "surf/image/group/"+groupId+".png";
+                    if (new File(path).exists()){
+                        String encode = Base64.getEncoder().encodeToString());
+                        JSONObject comeBackJson = new JSONObject();
+                        comeBackJson.put("command",command);
+                        comeBackJson.put("encode",encode);
+                        comeBackJson.put("groupId",groupId);
+                        send(comeBackJson);
+                    }*/
                 }
+                byteArrayOutputStreamMap.remove(messageId);
             }
         }
     }
-
-
 
     public void send(JSONObject jsonObject){
         send(jsonObject.toString());
     }
 
+    public void sendFile(byte[] sb,byte messageId){
+        send(sb, messageId, (byte) 2);
+    }
+
     public void send(String message){
-        byte messageId = getMessageId();
-        System.out.println("Server send : "+messageId+" : "+message);
-        byte[] sb = message.getBytes(); // 转化为字节数组
-        ArrayList<byte[]> newByteArr = MessageUtil.reviseArr(sb, messageId);
+        send(message.getBytes(StandardCharsets.UTF_8),getMessageId(), (byte) 1);
+    }
+
+    public void send(byte[] sb,byte messageId,byte messageType){
+        ArrayList<byte[]> newByteArr = MessageUtil.reviseArr(sb, messageId,messageType);
         for (byte[] bytes : newByteArr) {
             try {
                 BufferedOutputStream ps = new BufferedOutputStream(socket.getOutputStream());
@@ -478,7 +494,6 @@ public class TCPServerThread extends Thread{
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
                 dataOutputStream.writeInt(bytes.length);
-                System.out.println(bytes.length);
                 dataOutputStream.write(bytes);
                 dataOutputStream.flush();
                 byte[] messageBytes = byteArrayOutputStream.toByteArray();
