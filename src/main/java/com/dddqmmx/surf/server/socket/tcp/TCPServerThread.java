@@ -51,7 +51,6 @@ public class TCPServerThread extends Thread{
         userService = BeanUtil.getBean(UserServiceImpl.class);
         groupService = BeanUtil.getBean(GroupServiceImpl.class);
         messageService = BeanUtil.getBean(MessageServiceImpl.class);
-        messageService = BeanUtil.getBean(MessageServiceImpl.class);
         groupMemberService = BeanUtil.getBean(GroupMemberService.class);
         relationService = BeanUtil.getBean(RelationService.class);
     }
@@ -351,7 +350,7 @@ public class TCPServerThread extends Thread{
                     List<Relation> relationList = relationService.getFriendRequestByUserId(user.getId());
                     JSONObject comeBackJson = new JSONObject();
                     JSONArray relationArray = new JSONArray();
-                    for(Relation relation : relationList){;
+                    for(Relation relation : relationList){
                         relationArray.put(relation.getOtherSideId());
                     }
                     comeBackJson.put("relationArray",relationArray);
