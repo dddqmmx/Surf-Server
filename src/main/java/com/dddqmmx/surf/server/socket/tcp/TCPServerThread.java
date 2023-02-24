@@ -452,19 +452,25 @@ public class TCPServerThread extends Thread{
                             comeBackJson.put("fileMessageId",fileMessageId);
                             comeBackJson.put("groupId",groupId);
                             send(comeBackJson);
+                            sendFile(Files.readAllBytes(fileName.toPath()), fileMessageId);
                         }
-                        File file = FileUtil.getFileName(groupId);
-                        sendFile(Files.readAllBytes(file.toPath()), (byte) fileId);
                     }
-                    /*String path = "surf/image/group/"+groupId+".png";
-                    if (new File(path).exists()){
-                        String encode = Base64.getEncoder().encodeToString());
-                        JSONObject comeBackJson = new JSONObject();
-                        comeBackJson.put("command",command);
-                        comeBackJson.put("encode",encode);
-                        comeBackJson.put("groupId",groupId);
-                        send(comeBackJson);
-                    }*/
+                } else if ("getUserHead".equals(command)) {
+                    int userId = jsonObject.getInt("userId");
+                    User user = userService.getUserById(userId);
+                    if(null != user.getAvatar()){
+                        int fileId = user.getAvatar();
+                        File fileName = FileUtil.getFileName(fileId);
+                        byte fileMessageId = getMessageId();
+                        if (fileName.exists()){
+                            JSONObject comeBackJson = new JSONObject();
+                            comeBackJson.put("command",command);
+                            comeBackJson.put("fileMessageId",fileMessageId);
+                            comeBackJson.put("userId",userId);
+                            send(comeBackJson);
+                            sendFile(Files.readAllBytes(fileName.toPath()), fileMessageId);
+                        }
+                    }
                 }
                 byteArrayOutputStreamMap.remove(messageId);
             }
