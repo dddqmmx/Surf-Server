@@ -2,7 +2,7 @@ package com.dddqmmx.surf.server.pojo;
 
 import java.io.Serializable;
 
-public class Files implements Serializable {
+public class SurfFile implements Serializable {
     private Integer id;
     private String md5;
     private long length;

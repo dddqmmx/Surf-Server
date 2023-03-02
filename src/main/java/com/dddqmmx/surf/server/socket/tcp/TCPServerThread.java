@@ -15,7 +15,6 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class TCPServerThread extends Thread{
@@ -39,6 +38,7 @@ public class TCPServerThread extends Thread{
     private MessageService messageService;
     private GroupMemberService groupMemberService;
     private RelationService relationService;
+    private SurfFileService surfFileService;
 
     public static Map<Byte,ByteArrayOutputStream> byteArrayOutputStreamMap = new HashMap<>();
 
@@ -53,6 +53,7 @@ public class TCPServerThread extends Thread{
         messageService = BeanUtil.getBean(MessageServiceImpl.class);
         groupMemberService = BeanUtil.getBean(GroupMemberService.class);
         relationService = BeanUtil.getBean(RelationService.class);
+        surfFileService = BeanUtil.getBean(SurfFileService.class);
     }
 
 
@@ -458,19 +459,29 @@ public class TCPServerThread extends Thread{
                 } else if ("getUserHead".equals(command)) {
                     int userId = jsonObject.getInt("userId");
                     User user = userService.getUserById(userId);
-                    if(null != user.getAvatar()){
+                    if (null != user.getAvatar()) {
                         int fileId = user.getAvatar();
                         File fileName = FileUtil.getFileName(fileId);
                         byte fileMessageId = getMessageId();
-                        if (fileName.exists()){
+                        if (fileName.exists()) {
                             JSONObject comeBackJson = new JSONObject();
-                            comeBackJson.put("command",command);
-                            comeBackJson.put("fileMessageId",fileMessageId);
-                            comeBackJson.put("userId",userId);
+                            comeBackJson.put("command", command);
+                            comeBackJson.put("fileMessageId", fileMessageId);
+                            comeBackJson.put("userId", userId);
                             send(comeBackJson);
                             sendFile(Files.readAllBytes(fileName.toPath()), fileMessageId);
                         }
                     }
+                }else if ("getGroupHeadFiles".equals(command)) {
+                    int groupId = jsonObject.getInt("groupId");
+                    Group groupInfo = groupService.getGroupInfo(groupId);
+                    int groupAvatar = groupInfo.getGroupAvatar();
+                    SurfFile fileById = surfFileService.getFileById(groupId);
+                    JSONObject comeBackJson = new JSONObject();
+                    comeBackJson.put("command", command);
+
+                    comeBackJson.put("groupId", groupId);
+                    send(comeBackJson);
                 }
                 byteArrayOutputStreamMap.remove(messageId);
             }
