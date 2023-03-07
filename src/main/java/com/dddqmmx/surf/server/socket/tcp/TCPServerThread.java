@@ -472,15 +472,27 @@ public class TCPServerThread extends Thread{
                             sendFile(Files.readAllBytes(fileName.toPath()), fileMessageId);
                         }
                     }
-                }else if ("getGroupHeadFiles".equals(command)) {
+                }else if ("getGroupHeadSurfFile".equals(command)) {
                     int groupId = jsonObject.getInt("groupId");
                     Group groupInfo = groupService.getGroupInfo(groupId);
                     int groupAvatar = groupInfo.getGroupAvatar();
-                    SurfFile fileById = surfFileService.getFileById(groupId);
+                    SurfFile surfFileById = surfFileService.getFileById(groupAvatar);
                     JSONObject comeBackJson = new JSONObject();
                     comeBackJson.put("command", command);
-
                     comeBackJson.put("groupId", groupId);
+                    comeBackJson.put("md5",surfFileById.getMd5());
+                    comeBackJson.put("length", surfFileById.getLength());
+                    send(comeBackJson);
+                }else if ("getUserHeadSurfFile".equals(command)) {
+                    int userId = jsonObject.getInt("userId");
+                    User userInfo = userService.getUserById(userId);
+                    int userAvatar = userInfo.getAvatar();
+                    SurfFile surfFileById = surfFileService.getFileById(userAvatar);
+                    JSONObject comeBackJson = new JSONObject();
+                    comeBackJson.put("command", command);
+                    comeBackJson.put("userId", userId);
+                    comeBackJson.put("md5",surfFileById.getMd5());
+                    comeBackJson.put("length", surfFileById.getLength());
                     send(comeBackJson);
                 }
                 byteArrayOutputStreamMap.remove(messageId);

@@ -16,7 +16,7 @@ public class Test {
 
     public static void main(String[] args) {
         SpringApplication.run(SurfServerApplication.class, args);
-        int id = 12;
+        int id = 10;
         System.out.println(FileUtil.getFileName(id).length());
         try {
             System.out.println(DigestUtils.md5DigestAsHex(new FileInputStream(FileUtil.getFileName(id))));
